@@ -1,12 +1,54 @@
 % Aidan Hunt
 %
+% Implements a closed-channel potential flow based momentum model and
+% blockage correction for turbine arrays as described by Steiros et al. in
+% "An analytical blockage correction model for high solidity turbines"
+% (2022; https://doi.org/10.1017/jfm.2022.735) This implementation follows
+% that of Hunt et al. in "Experimental validation of a linear momentum and
+% bluff-body model for high-blockage cross-flow turbine arrays" (2025;
+% https://doi.org/10.1103/tpzz-df14).
+% 
+% To apply the model, construct a SteirosPotentialFlow object: using the
+% following syntax:
+% 
+%   st = SteirosPotentialFlow()
+%
+% and call the class's methods using the dot notation (i.e.,
+% st.predictUnconfined(...)).
+% 
+% SteirosPotentialFlow methods:
+%   predictUnconfined - Applies a blockage correction to predict 
+%                       unconfined performance from confined performance
+%                       data.
+%
+% The methods above expect that confined performance data is provided as an
+% mxn structure array, conf, with the following fields:
+%   Uinf (required)   - undisturbed upstream freestream velocity (m/s)
+%   CT   (required)   - thrust coefficient
+%   beta (required)   - blockage ratio
+%   CP   (optional)   - performance coefficient
+%   CQ   (optional)   - torque coefficient
+%   CL   (optional)   - lateral force coefficient
+%   CF   (optional)   - resultant force coefficient
+%   TSR  (optional)   - tip-speed ratio
+% 
+% The fields of conf(i,j) must be vectors that are all the same size. You
+% can use the methods above to apply corrections and forecasts to multiple
+% datasets at once by specifying each dataset as an element of conf (e.g.,
+% conf(i,j)).
+%
+% See also: BCBase, HoulsbyOpenChannel, NWTwoScale
 
 classdef SteirosPotentialFlow < BCBase
-
 
     methods (Access=public)
 
         function [conf] = solvePotentialFlow(st, conf, utUinfGuess)
+        % Using the measured flow and performance quantities and the
+        % potential-flow model of Steiros et al, solves for the flow field
+        % through and around the turbine, as well as the wake width.
+        % 
+        % TO-DO: improve documentation
             arguments
                 st
                 conf
@@ -38,6 +80,16 @@ classdef SteirosPotentialFlow < BCBase
         end
 
         function [conf2, conf1] = forecastConfined(st, conf1, beta2, uGuess, options)
+        % Using the measured flow and performance quantities and the
+        % potential-flow model of Steiros et al, applies a blockage
+        % correction/forecast to predict turbine performance at some other
+        % blockage beta2.
+        % The user may optionally specify whether a "standard",
+        % Glauert-derived blockage correction or a "bluff body" blockage
+        % correction inspired by Maskell's theory should be applied
+        % (default: "standard").
+        % 
+        % TO-DO: improve documentation
             arguments
                 st
                 conf1
@@ -82,6 +134,15 @@ classdef SteirosPotentialFlow < BCBase
         end
 
         function [unconf, conf] = predictUnconfined(st, conf, uGuess, options)
+        % Using the measured flow and performance quantities and the
+        % potential-flow model of Steiros et al, applies a blockage
+        % correction to predict turbine performance in unconfined flow.
+        % The user may optionally specify whether a "standard",
+        % Glauert-derived blockage correction or a "bluff body" blockage
+        % correction inspired by Maskell's theory should be applied
+        % (default: "standard").
+        % 
+        % TO-DO: improve documentation
             arguments
                 st
                 conf

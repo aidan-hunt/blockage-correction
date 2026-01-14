@@ -107,28 +107,24 @@ classdef BCBase < matlab.mixin.Heterogeneous
             % compatible (i.e., the fields of confData are vectors are all
             % the same length). If scalar values of h and beta are
             % provided, converts to vectors of appropriate length.
-            for i = 1:length(confData)
-                checkFields = BCBase.correctorNames(1:end-3);
-                allSizes = [];
-                for j = 1:length(checkFields)
-                    if isfield(confData(i), checkFields{j})
-                        allSizes  = [allSizes; size(confData(i).(checkFields{j}))];
+
+            % Get fieldnames of confData
+            fieldList = fieldnames(confData);
+            for i = 1:numel(confData)
+                % Get size of CT input
+                targetLength = length(confData(i).CT);
+
+                % Loop through fields and check compatability
+                for j = 1:length(fieldList)
+                    if ismember(fieldList{j}, {'beta', 'h'})
+                        if isscalar(confData(i).(fieldList{j}))
+                            % Make vector of correct size
+                            confData(i).(fieldList{j}) = repmat(confData(i).(fieldList{j}), targetLength, 1);
+                        end
                     end
-                end
-                sizeCheck = size(unique(allSizes, 'rows'), 1) == 1;
-                if (~sizeCheck)
-                    error('Sizes of input Uinf, CP, CT, and TSR must match.');
-                else
-                    targetSize = size(confData(i).Uinf);
-                end
-                
-                % Check size of beta and h
-                checkFields = {'beta', 'h'};
-                for j = 1:length(checkFields)
-                    if length(confData(i).(checkFields{j})) == 1
-                        confData(i).(checkFields{j}) = repmat(confData(i).(checkFields{j}), targetSize(1), targetSize(2));
-                    elseif ~all(size(confData(i).(checkFields{j})) == targetSize)
-                        error('Size of input "%s" must either a) match size of Uinf, CP, CT, TSR, or b) be 1.', checkFields{j});
+
+                    if length(confData(i).(fieldList{j})) ~= targetLength
+                        error('Lengths of input vectors (Uinf, CT, beta, CP, etc.) must match for each confined dataset.')
                     end
                 end
             end

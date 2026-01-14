@@ -80,13 +80,6 @@ classdef BCTranslator < BCBase
 
             for i = 1:length(oldNames)
 
-                % The below only works for single turbines...?
-                % if isfield(tds, oldNames{i}) && isrow(tds.(oldNames{i})) % Catch old data case
-                %     tds.(oldNames{i}) = tds.(oldNames{i})';
-                % end
-                % if isfield(fds, oldNames{i}) && isrow(fds.(oldNames{i})) % Catch old data case
-                %     fds.(oldNames{i}) = fds.(oldNames{i})';
-                % end
                 switch oldNames{i}
                     case {'eff', 'cThrust', 'cForce', 'cLat', 'cTorque', 'TSR'}
                         % Get data
